@@ -33,7 +33,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QWidget" name="horizontalLayoutWidget">
@@ -576,6 +576,9 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="currentSection">
           <enum>QDateTimeEdit::YearSection</enum>
+         </property>
+         <property name="displayFormat">
+          <string>yyyy-MM-dd AP hh:mm:ss</string>
          </property>
          <property name="calendarPopup">
           <bool>false</bool>

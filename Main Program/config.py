@@ -20,7 +20,7 @@ class Env_Config():
 			try:
 				cp = configparser.ConfigParser()
 				cp.read(CONFIG_FILE_NAME, encoding='utf-8')
-				print('잘 읽음')
+				print('load config file success')
 				
 				self.COM_PORT = cp['DEFAULT']['COM_PORT']
 				self.CARD1 = cp['DEFAULT']['CARD1_COM']

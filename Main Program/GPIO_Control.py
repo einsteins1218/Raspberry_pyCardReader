@@ -25,6 +25,13 @@ class GPIO_Control():
 
 	def gpio_write_pin(channel, pin_state):
 		GPIO.output(self.GPIOIO_DO[channel], pin_state)
+		
+	def gpio_read_pin(channel, pin_state):
+		# STM32 에서는 OUTPUT 핀도 읽을 수 있는데, 되는지 확인 필요
+		if GPIO.input(self.GPIOIO_DO[channel]) == GPIO.LOW:
+			return 0
+		else:
+			return 1
 			
 	def gpio_toggle_pin(channel):
 		# STM32 에서는 OUTPUT 핀도 읽을 수 있는데, 되는지 확인 필요

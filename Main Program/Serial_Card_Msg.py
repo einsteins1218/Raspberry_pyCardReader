@@ -35,11 +35,6 @@ if SERIAL_VERSION == 1:
 	#문자열 포맷2, 끝문자 2바이트가 엔터일 경우
 	SERIAL_END1 = ord("\r") # 대응하는 문자를 ASCII로 바꿈, 반대의 경우는 chr(13)
 	SERIAL_END2 = ord("\n") # 대응하는 문자를 ASCII로 바꿈, 반대의 경우는 chr(10)
-	
-
-SERIAL_CONTENT_CMD_DO_ALL_ON = 0x10
-SERIAL_CONTENT_CMD_DO_ALL_OFF = 0x20
-SERIAL_CONTENT_CMD_DO_ONOFF = 0x01
 
 
 
@@ -57,7 +52,7 @@ class M4MsgSender():
 
 
 # serial port에 listen하고있는 thread
-class M4MsgRecvThread(threading.Thread):
+class CardMsgRecvThread(threading.Thread):
 	if SERIAL_VERSION == 1:
 		STATE_IDLE = 0				  # 대기중. STX 또는 CARD_ID 수신 대기중.
 		STATE_ETX_CARD_ID = 1		   # STX을 수신했고, ETX 수신할 때 까지 CARD_ID 수신 중

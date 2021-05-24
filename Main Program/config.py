@@ -28,8 +28,11 @@ class Env_Config():
 				self.QR1 = cp['DEFAULT']['QR1_COM']
 				self.QR2 = cp['DEFAULT']['QR2_COM']
 				self.OS = cp['DEFAULT']['OS']
-				
-				print(self.CARD1)
+				self.SOCK_IP = cp['DEFAULT']['sock_ip']
+				self.SOCK_PORT = cp['DEFAULT']['sock_port']
+				self.DB_HOST = cp['DEFAULT']['db_host']
+				self.DB_USER = cp['DEFAULT']['db_user']
+				self.DB_PASSWORD = cp['DEFAULT']['db_password']
 				
 				cnt = 0
 			except KeyError:
@@ -47,6 +50,10 @@ class Env_Config():
 		newcp.set('DEFAULT', 'QR1_COM', '/dev/ttyAMA2')
 		newcp.set('DEFAULT', 'QR2_COM', '/dev/ttyAMA3')
 		newcp.set('DEFAULT', 'OS', 'UBUNTU')
+		newcp.set('DEFAULT', 'SOCK_IP', '127.0.0.1')
+		newcp.set('DEFAULT', 'DB_HOST', '127.0.0.1')
+		newcp.set('DEFAULT', 'DB_USER', 'admin')
+		newcp.set('DEFAULT', 'DB_PASSWORD', 'password')
 
 		fp = open(CONFIG_FILE_NAME, 'w')
 		newcp.write(fp)

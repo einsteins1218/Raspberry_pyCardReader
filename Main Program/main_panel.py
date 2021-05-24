@@ -18,26 +18,23 @@ import threading
 #import timeout
 import config
 #import Serial_Card_Msg
+#import Serial_QR_Msg
+#import WinSock_Msg
 import pymysql
 from GPIO_Control import * #GPIO 제어 전용 CLASS 호출
 
+#serial, sock, db 통신 연결을 위한 config 파일 load
+cfg = config.Env_Config()
 
 #pyQT5 ui 파일 로드
 ui_form = uic.loadUiType("main_panel.ui")[0]
 #시간 표시하기 위한 타이머
 timer = QTimer()
 #db 접근을 위한 변수들 (사용법 참고: https://devpouch.tistory.com/96)
+# https://www.programcreek.com/python/example/68898/pymysql.Error 에러 처리 방법
 ''' 주석 나중에 푸세요! '''
-#mysql_conn = pymysql.connect(host='localhost', user='root', password='password', charset='utf8') 
+#mysql_conn = pymysql.connect(host=cfg.DB_HOST, user=cfg.DB_USER, password=cfg.DB_PASSWORD, charset='utf8') 
 #mysql_cursor = mysql_conn.cursor() 
-
-
-##화면1에서 화면2 전환 방법
-'''
-		current_page = self.stackedWidget.currentIndex()
-		self.stackedWidget.setCurrentIndex(current_page+1)
-'''
-
 ''' mysql 데이터 읽는 방법
 #mysql_query = "SELECT * FROM user where car_number = %s" 
 #mysql_cursor.execute(mysql_query, ("서울0123"))
@@ -48,6 +45,24 @@ for data in mysql_res:
         print(data) 
 
 '''
+
+##화면1에서 화면2 전환 방법
+'''
+		current_page = self.stackedWidget.currentIndex()
+		self.stackedWidget.setCurrentIndex(current_page+1)
+'''
+
+# 소켓 통신 CMD에 따른 처리를 위한 함수
+#Recv. Command
+SOCK_CONTENT_CMD_DO_ONOFF = "01"	# MSG에 Set/Reset되어있는 DO핀을 ON/OFF로 설정
+SOCK_CONTENT_CMD_DO_ALL_ON = "10"   # MSG 상관 없이 모든 DO 핀을 ON으로 설정
+SOCK_CONTENT_CMD_DO_ALL_OFF = "20"  # MSG 상관 없이 모든 DO 핀을 OFF로 설정
+SOCK_CONTENT_CMD_DO_AUTO_TOGGLE = "90"  # DO? 핀을 ON하고 1초뒤에 OFF 한다
+SOCK_CONTENT_CMD_DO_ALL_OFF = "99"  # DI? 핀이 ON되면 DO? 핀을 ON 함. (정의가 명확해야 할듯..)
+
+#Send. Command
+SOCK_CONTENT_ACK = "XX"
+
 
 
 class MainWindow(QMainWindow, ui_form):
@@ -112,17 +127,15 @@ class MainWindow(QMainWindow, ui_form):
 		# ** 라즈베리파이에서 구현하면 주석 푸세요! **
 		#self.gpio = GPIO_Control()
 		
-		#serial 통신 연결을 위한 config 파일 load
-		cfg = config.Env_Config()
 		
 		#serial 통신 연결 시도
 		try:
 			card1_ser = serial.Serial(cfg.CARD1, 115200, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			card1_recv = Serial_Msg.M4MsgRecvThread(card1_ser, INDEX_CARD1)
+			card1_recv = Serial_Card_Msg.CardMsgRecvThread(card1_ser, INDEX_CARD1)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
-			self.card1_recv.recv_cplt.connect(self.cb_serial_recv_cplt)
+			card1_recv.recv_cplt.connect(self.cb_serial_card_recv_cplt)
 			card1_recv.start()
 			
 		except (OSError, serial.SerialException):
@@ -131,10 +144,10 @@ class MainWindow(QMainWindow, ui_form):
 		try:
 			card2_ser = serial.Serial(cfg.CARD2, 115200, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			card2_recv = Serial_Msg.M4MsgRecvThread(card1_ser, INDEX_CARD2)
+			card2_recv = Serial_Card_Msg.CardMsgRecvThread(card1_ser, INDEX_CARD2)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
-			self.card2_recv.recv_cplt.connect(self.cb_serial_recv_cplt)
+			card2_recv.recv_cplt.connect(self.cb_serial_card_recv_cplt)
 			card2_recv.start()
 			
 		except (OSError, serial.SerialException):
@@ -143,10 +156,10 @@ class MainWindow(QMainWindow, ui_form):
 		try:
 			qr1_ser = serial.Serial(cfg.QR1, 115200, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			qr1_recv = Serial_Msg.M4MsgRecvThread(card1_ser, INDEX_QR1)
+			qr1_recv = Serial_QR_Msg.QRMsgRecvThread(qr1_ser, INDEX_QR1)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
-			self.qr1_recv.recv_cplt.connect(self.cb_serial_recv_cplt)
+			qr1_recv.recv_cplt.connect(self.cb_serial_qr_recv_cplt)
 			qr1_recv.start()
 			
 		except (OSError, serial.SerialException):
@@ -155,10 +168,10 @@ class MainWindow(QMainWindow, ui_form):
 		try:
 			qr2_ser = serial.Serial(cfg.QR2, 115200, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			qr2_recv = Serial_Msg.M4MsgRecvThread(card1_ser, INDEX_QR2)
+			qr2_recv = Serial_QR_Msg.QRMsgRecvThread(qr2_ser, INDEX_QR2)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
-			self.qr2_recv.recv_cplt.connect(self.cb_serial_recv_cplt)
+			qr2_recv.recv_cplt.connect(self.cb_serial_qr_recv_cplt)
 			qr2_recv.start()
 			
 		except (OSError, serial.SerialException):
@@ -166,9 +179,28 @@ class MainWindow(QMainWindow, ui_form):
 		#통신 연결 시도 끝
 		
 		
-	#각 시리얼 통신으로 부터 데이터가 정상적으로 수신되면 호출되는 함수
+		#sock 통신 연결 시도
+		try:
+			#서버에 Bind
+			c_socket = socket(AF_INET, SOCK_STREAM)
+			c_socket.connect((cfg.SOCK_HOST, cfg.SOCK_PORT))
+			
+			#데이터 송신 방법
+			#c_socket.send('send data!!'.encode('utf-8'))
+			
+			# SOCK 데이터 읽는 쓰레드 생성
+			sock_recv = WinSock_Msg.SockMsgRecvThread(c_socket)
+			
+			# sock 통신으로부터 cmd, msg 데이터가 정상 ""수신""되면 호출되는 콜백함수
+			sock_recv.recv_cplt.connect(self.cb_sock_recv_cplt)
+			sock_recv.start()
+			
+		except:
+			print('SOCK 통신 연결 실패!! ')
+		
+	#CARD 리더기 시리얼 통신으로 부터 데이터가 정상적으로 수신되면 호출되는 함수
 	@pyqtSlot(int, str)
-	def cb_serial_recv_cplt(self, thread_index, card_id):
+	def cb_serial_card_recv_cplt(self, thread_index, card_id):
 		try:
 			if thread_index == self.INDEX_CARD1:
 				#Mysql DB 비교해서, 정상적인 카드 데이터이면 GUI에 출력
@@ -247,9 +279,17 @@ class MainWindow(QMainWindow, ui_form):
 					
 					self.pushButton_on2.setEnabled(False)
 					self.pushButton_off2.setEnabled(False)
-				
 
-			elif thread_index == self.INDEX_QR1:
+				
+		except:
+			pass
+	
+	#QR 시리얼 통신으로 부터 데이터가 정상적으로 수신되면 호출되는 함수
+	@pyqtSlot(int, str, str, str, str)
+	def cb_serial_qr_recv_cplt(self, thread_index, company, product, car_number, quantity):
+		try:
+		
+			if thread_index == self.INDEX_QR1:
 				#카드가 먼저 찍혀있는지 확인 후에, 정상이면 처리
 				if self.card1_connect == True:
 					print("card1 connect ok")
@@ -261,8 +301,40 @@ class MainWindow(QMainWindow, ui_form):
 				
 		except:
 			pass
-	
+			
+	#SOCK 통신으로 부터 데이터가 정상적으로 수신되면 호출되는 함수
+	@pyqtSlot(str, str)
+	def cb_sock_recv_cplt(self, cmd, msg):
+		try:
 		
+'''
+#데이터 송신 방법
+#c_socket.send('send data!!'.encode('utf-8'))
+
+#recv cmd list
+SOCK_CONTENT_CMD_DO_ONOFF = "01"	# MSG에 Set/Reset되어있는 DO핀을 ON/OFF로 설정
+SOCK_CONTENT_CMD_DO_ALL_ON = "10"   # MSG 상관 없이 모든 DO 핀을 ON으로 설정
+SOCK_CONTENT_CMD_DO_ALL_OFF = "20"  # MSG 상관 없이 모든 DO 핀을 OFF로 설정
+SOCK_CONTENT_CMD_DO_AUTO_TOGGLE = "90"  # DO? 핀을 ON하고 1초뒤에 OFF 한다
+SOCK_CONTENT_CMD_DO_ALL_OFF = "99"  # DI? 핀이 ON되면 DO? 핀을 ON 함. (정의가 명확해야 할듯..)
+'''
+			if cmd == self.SOCK_CONTENT_CMD_DO_ONOFF:
+				
+				
+			elif cmd == self.SOCK_CONTENT_CMD_DO_ALL_ON:
+				
+					
+			elif cmd == self.SOCK_CONTENT_CMD_DO_ALL_OFF:
+				
+					
+			elif cmd == self.SOCK_CONTENT_CMD_DO_AUTO_TOGGLE:
+				
+					
+			elif cmd == self.SOCK_CONTENT_CMD_DO_ALL_OFF:
+				
+				
+		except:
+			pass
 		
 
 	def cb_timeout(self):
@@ -302,6 +374,7 @@ if __name__ == "__main__":
 	
 	#db 종료, 나중에 연결하면 주석 푸세요,.
 	#mysql_conn.commit() 
+	#mysql_cursor.close()
 	#mysql_conn.close() 
 	
 	sys.exit(ret)

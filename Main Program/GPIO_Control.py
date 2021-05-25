@@ -11,7 +11,7 @@ class GPIO_Control():
 	
 		#불필요한 WARNING 제거
 		GPIO.setwarnings(False)
-
+        
 		#GPIO 핀의 번호모드 설정
 		GPIO.setmode(GPIO.BCM)
 		
@@ -27,8 +27,7 @@ class GPIO_Control():
 		GPIO.output(self.GPIOIO_DO[channel], pin_state)
 		
 	def gpio_read_pin(channel, pin_state):
-		# STM32 에서는 OUTPUT 핀도 읽을 수 있는데, 되는지 확인 필요
-		if GPIO.input(self.GPIOIO_DO[channel]) == GPIO.LOW:
+		if GPIO.input(self.GPIOIO_DI[channel]) == GPIO.LOW:
 			return 0
 		else:
 			return 1

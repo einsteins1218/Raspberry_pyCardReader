@@ -24,14 +24,14 @@ except KeyboardInterrupt:
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import test1
+import signal_test1
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        mainsignal = test1.SockMsgRecvThread("hello world!")
+        mainsignal = signal_test1.SockMsgRecvThread("hello world!")
         mainsignal.recv_cplt.connect(self.signal1_emit)
         mainsignal.start()
 

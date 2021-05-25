@@ -16,8 +16,6 @@
 
 '''
 
-import requests
-from requests.exceptions import HTTPError
 import threading
 import struct
 import time
@@ -30,7 +28,7 @@ if SERIAL_VERSION == 1:
 	SERIAL_END2 = ord("\n") # 대응하는 문자를 ASCII로 바꿈, 반대의 경우는 chr(10)
 	
 
-class QRMsgRecvThread(threading.Thread):
+class QRMsgRecvThread(threading.Thread, QObject):
 
 	if SERIAL_VERSION == 1:
 		STATE_END1_QR_ID = 0			# END1 수신할 때 까지 QR Link 데이터 수신 중
@@ -95,8 +93,7 @@ class QRMsgRecvThread(threading.Thread):
 					if ord(data[0]) == SERIAL_END2:
 						# ** END2 수신 완료! QR로부터 받은 링크를 파싱 및 GUI로 알림
 						
-						self.recv_buff = self.port.read()
-						self.parsing_link_data(self.recv_buff)  # link에 있는 요소 파싱
+						self.parsing_data(self.recv_buff)  # link에 있는 요소 파싱
 						
 						self.state = self.STATE_END1_QR_ID
 						self.recv_buff = ''
@@ -111,42 +108,29 @@ class QRMsgRecvThread(threading.Thread):
 		self.running = False
 	
 	#url로부터 데이터를 파싱함
-	def parsing_link_data(self, url):
+	def parsing_data(self, data):
 	
-		try:
-			response = requests.get(url)
-			response.encoding = 'UTF-8-SIG' # UTF-8 로 하니까 UTF-8 BOM 이 포함되어 맨 앞에 이상한 글자가 붇어서, 이를 해결
-		
-			# If the response was successful, no Exception will be raised
-			response.raise_for_status()
-			
-			self.results = ['', '', '', '']
-			parsing_index = 0
-			
-			for i in range(len(response.text)):
-				
-				if response.text[i] == '@':
-					parsing_index += 1
-					
-					if parsing_index > 3: # @ 가 4개 이상 들어오면 에러 처리
-						print("QR: Wrong Data")
-						return
-				else:
-					self.results[parsing_index] += response.text[i]
-					
-			if parsing_index == 3: # @가 3개 들어오면, 정상적으로 들어왔음
-				#GUI 로 파싱한 데이터 전송
-				recv_cplt.emit(self.index, self.results[0], self.results[1], self.results[2], self.results[3])
-			
-			else:
-				print("QR: Wrong Data")
-			
-			
-		except HTTPError as http_err:
-			print(f'QR: HTTP error occurred: {http_err}')  # Python 3.6
-		except Exception as err:
-			print(f'QR: Other error occurred: {err}')  # Python 3.6
-		else:
-			print('QR: Parsing Success!')
+        self.results = ['', '', '', '', '', '', '', '', '', '']
+        parsing_index = 0
+        
+        for i in range(len(data)):
+            
+            if data[i] == '|':
+                parsing_index += 1
+                
+                if parsing_index > 9: # @ 가 4개 이상 들어오면 에러 처리
+                    print("QR: Wrong Data")
+                    return
+            else:
+                self.results[parsing_index] += data[i]
+                
+        if parsing_index == 9: # @가 3개 들어오면, 정상적으로 들어왔음
+            #GUI 로 파싱한 데이터 전송
+            recv_cplt.emit(self.index, self.results[6], self.results[7], self.results[4], self.results[9])
+        
+        else:
+            print("QR: Wrong Data")
+        
+
 
 			

@@ -52,7 +52,7 @@ class M4MsgSender():
 
 
 # serial port에 listen하고있는 thread
-class CardMsgRecvThread(threading.Thread):
+class CardMsgRecvThread(threading.Thread, QObject):
 	if SERIAL_VERSION == 1:
 		STATE_IDLE = 0				  # 대기중. STX 또는 CARD_ID 수신 대기중.
 		STATE_ETX_CARD_ID = 1		   # STX을 수신했고, ETX 수신할 때 까지 CARD_ID 수신 중
@@ -89,7 +89,7 @@ class CardMsgRecvThread(threading.Thread):
 						self.recv_buff = ''
 						continue
 
-					if ord(self.recv_buff[0]) == SERIAL_STX:
+					if ord(data) == SERIAL_STX:
 						self.state = self.STATE_ETX_CARD_ID	# STX 수신 완료, ETX 수신 할 때 까지 CARD ID 읽음
 						self.recv_buff = ''
 					else:

@@ -204,8 +204,8 @@ class MainWindow(QMainWindow, ui_form):
 		try:
 			if thread_index == self.INDEX_CARD1:
 				#Mysql DB 비교해서, 정상적인 카드 데이터이면 GUI에 출력
-				mysql_cursor.execute(mysql_query, card_id)
-				mysql_car_num = mysql_cursor.fetchone()  # 차량 번호를 받아옴
+				#mysql_cursor.execute(mysql_query, card_id)
+				#mysql_car_num = mysql_cursor.fetchone()  # 차량 번호를 받아옴
 				
 				#카드 번호가 등록되어있어서 차량 번호를 정상 리턴했을 경우
 				#카드 번호가 무조껀 1개 등록되어 있다는 가정하에 fetchone() 함수 썼음

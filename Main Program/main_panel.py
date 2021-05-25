@@ -130,9 +130,9 @@ class MainWindow(QMainWindow, ui_form):
 		
 		#serial 통신 연결 시도
 		try:
-			card1_ser = serial.Serial(cfg.CARD1, 115200, timeout=0.2)
+			card1_ser = serial.Serial(cfg.CARD1, 9600, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			card1_recv = Serial_Card_Msg.CardMsgRecvThread(card1_ser, INDEX_CARD1)
+			card1_recv = Serial_Card_Msg.CardMsgRecvThread(card1_ser, self.INDEX_CARD1)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
 			card1_recv.recv_cplt.connect(self.cb_serial_card_recv_cplt)
@@ -142,9 +142,9 @@ class MainWindow(QMainWindow, ui_form):
 			print('CARD1 통신 포트 연결 실패!! ')
 			
 		try:
-			card2_ser = serial.Serial(cfg.CARD2, 115200, timeout=0.2)
+			card2_ser = serial.Serial(cfg.CARD2, 9600, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			card2_recv = Serial_Card_Msg.CardMsgRecvThread(card1_ser, INDEX_CARD2)
+			card2_recv = Serial_Card_Msg.CardMsgRecvThread(card2_ser, self.INDEX_CARD2)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
 			card2_recv.recv_cplt.connect(self.cb_serial_card_recv_cplt)
@@ -154,9 +154,9 @@ class MainWindow(QMainWindow, ui_form):
 			print('CARD2 통신 포트 연결 실패!! ')
 			
 		try:
-			qr1_ser = serial.Serial(cfg.QR1, 115200, timeout=0.2)
+			qr1_ser = serial.Serial(cfg.QR1, 9600, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			qr1_recv = Serial_QR_Msg.QRMsgRecvThread(qr1_ser, INDEX_QR1)
+			qr1_recv = Serial_QR_Msg.QRMsgRecvThread(qr1_ser, self.INDEX_QR1)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
 			qr1_recv.recv_cplt.connect(self.cb_serial_qr_recv_cplt)
@@ -166,9 +166,9 @@ class MainWindow(QMainWindow, ui_form):
 			print('QR1 통신 포트 연결 실패!! ')
 			
 		try:
-			qr2_ser = serial.Serial(cfg.QR2, 115200, timeout=0.2)
+			qr2_ser = serial.Serial(cfg.QR2, 9600, timeout=0.2)
 			# 시리얼 데이터 읽는 쓰레드 생성
-			qr2_recv = Serial_QR_Msg.QRMsgRecvThread(qr2_ser, INDEX_QR2)
+			qr2_recv = Serial_QR_Msg.QRMsgRecvThread(qr2_ser, self.INDEX_QR2)
 			
 			#serial 통신을 처리하는 각 쓰레들로부터 데이터를 받을 경우 처리하는 콜백함수 등록
 			qr2_recv.recv_cplt.connect(self.cb_serial_qr_recv_cplt)
@@ -226,7 +226,6 @@ class MainWindow(QMainWindow, ui_form):
 					self.card1_textbox2.setText(self.card1_id)
 					
 					self.car1_textbox.setText(self.card1_car_num)
-					self.car1_textbox2.setText(self.card1_car_num)
 					
 					self.pushButton_on1.setEnabled(True)
 					self.pushButton_off1.setEnabled(False)
@@ -236,9 +235,8 @@ class MainWindow(QMainWindow, ui_form):
 					self.card2_textbox2.setText(self.card1_id)
 					
 					self.car2_textbox.setText(self.card1_car_num)
-					self.car2_textbox2.setText(self.card1_car_num)
 					
-					self.pushButton_on1.setEnabled(False)
+					self.pushButton_on1.setEnabled(True)
 					self.pushButton_off1.setEnabled(False)
 					
 			elif thread_index == self.INDEX_CARD2:
@@ -265,7 +263,6 @@ class MainWindow(QMainWindow, ui_form):
 					self.card2_textbox2.setText(self.card2_id)
 					
 					self.car2_textbox.setText(self.card2_car_num)
-					self.car2_textbox2.setText(self.card2_car_num)
 					
 					self.pushButton_on2.setEnabled(True)
 					self.pushButton_off2.setEnabled(False)
@@ -275,9 +272,8 @@ class MainWindow(QMainWindow, ui_form):
 					self.card2_textbox2.setText(self.card2_id)
 					
 					self.car2_textbox.setText(self.card2_car_num)
-					self.car2_textbox2.setText(self.card2_car_num)
 					
-					self.pushButton_on2.setEnabled(False)
+					self.pushButton_on2.setEnabled(True)
 					self.pushButton_off2.setEnabled(False)
 
 				
@@ -318,19 +314,19 @@ SOCK_CONTENT_CMD_DO_ALL_OFF = "20"  # MSG 상관 없이 모든 DO 핀을 OFF로 
 SOCK_CONTENT_CMD_DO_AUTO_TOGGLE = "90"  # DO? 핀을 ON하고 1초뒤에 OFF 한다
 SOCK_CONTENT_CMD_DO_ALL_OFF = "99"  # DI? 핀이 ON되면 DO? 핀을 ON 함. (정의가 명확해야 할듯..)
 '''
-			if cmd == self.SOCK_CONTENT_CMD_DO_ONOFF:
+			if cmd == SOCK_CONTENT_CMD_DO_ONOFF:
 				
 				
-			elif cmd == self.SOCK_CONTENT_CMD_DO_ALL_ON:
-				
-					
-			elif cmd == self.SOCK_CONTENT_CMD_DO_ALL_OFF:
+			elif cmd == SOCK_CONTENT_CMD_DO_ALL_ON:
 				
 					
-			elif cmd == self.SOCK_CONTENT_CMD_DO_AUTO_TOGGLE:
+			elif cmd == SOCK_CONTENT_CMD_DO_ALL_OFF:
 				
 					
-			elif cmd == self.SOCK_CONTENT_CMD_DO_ALL_OFF:
+			elif cmd == SOCK_CONTENT_CMD_DO_AUTO_TOGGLE:
+				
+					
+			elif cmd == SOCK_CONTENT_CMD_DO_ALL_OFF:
 				
 				
 		except:

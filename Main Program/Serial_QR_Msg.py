@@ -57,6 +57,7 @@ class QRMsgRecvThread(threading.Thread, QObject):
 				if self.state == self.STATE_END1_QR_ID: #엔터 수신할 때 까지 데이터 읽음
 		
 					data = self.port.read(1)
+                    data = data.decode()
 					
 					if len(data) == 0:
 						continue
@@ -77,7 +78,8 @@ class QRMsgRecvThread(threading.Thread, QObject):
 					
 				if self.state == self.STATE_END2_QR_ID: # \n 수신 대기
 		
-					data = self.port.read(1)		 
+					data = self.port.read(1)
+                    data = data.decode()
 
 					if len(data) == 0:
 						continue

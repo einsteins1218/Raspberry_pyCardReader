@@ -81,6 +81,7 @@ class CardMsgRecvThread(threading.Thread, QObject):
 			
 				if self.state == self.STATE_IDLE:
 					data = self.port.read(1)		 # 1바이트 읽음
+                    data = data.decode()
 
 					if len(data) == 0:
 						continue
@@ -97,7 +98,8 @@ class CardMsgRecvThread(threading.Thread, QObject):
 						self.recv_buff = data
 						
 				elif self.state == self.STATE_ETX_CARD_ID: 		# STX 수신 완료, ETX 수신 할 때 까지 CARD ID 읽음
-					data = self.port.read(1)		 
+					data = self.port.read(1)
+                    data = data.decode()                    
 
 					if len(data) == 0:
 						continue
@@ -119,7 +121,8 @@ class CardMsgRecvThread(threading.Thread, QObject):
 						
 						
 				elif self.state == self.STATE_END1_CARD_ID:
-					data = self.port.read(1)		 
+					data = self.port.read(1)
+                    data = data.decode()
 
 					if len(data) == 0:
 						continue
@@ -137,7 +140,8 @@ class CardMsgRecvThread(threading.Thread, QObject):
 							
 							
 				elif self.state == self.STATE_END2_CARD_ID:
-					data = self.port.read(1)		 
+					data = self.port.read(1)
+                    data = data.decode()
 
 					if len(data) == 0:
 						continue

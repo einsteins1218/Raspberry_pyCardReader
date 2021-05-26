@@ -3,6 +3,7 @@
 # https://docs.python-requests.org/en/master/user/quickstart/
 
 '''
+
   메시지를 추상화한 클래스.
 
   MESSAGE VERSION 1 -----
